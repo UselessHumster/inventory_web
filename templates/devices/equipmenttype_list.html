@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Типы оборудования{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Типы оборудования</h1>
+
+<p>
+    <a href="{% url 'devices:equipmenttype_create' %}" class="btn btn-success">Добавить новый тип оборудования</a>
+</p>
+
+{% if equipment_types %}
+<div class="table-responsive">
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Название</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type in equipment_types %}
+            <tr>
+                <td>{{ type.name }}</td>
+                <td>
+                    <a href="{% url 'devices:equipmenttype_update' type.pk %}" class="btn btn-sm btn-primary me-2">Изменить</a>
+                    <a href="{% url 'devices:equipmenttype_delete' type.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    Типы оборудования не найдены.
+</div>
+{% endif %}
+{% endblock %}

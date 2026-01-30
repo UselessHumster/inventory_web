@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить сотрудника{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">Удалить сотрудника</h3>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Вы уверены, что хотите удалить сотрудника <strong>"{{ object.name }}"</strong> из компании <strong>"{{ object.company.name }}"</strong>?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger me-2">Подтвердить удаление</button>
+                    <a href="{% url 'employees:employee_list' %}" class="btn btn-secondary">Отмена</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

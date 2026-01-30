@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Список сотрудников{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Сотрудники</h1>
+
+<p>
+    <a href="{% url 'employees:employee_create' %}" class="btn btn-success">Добавить нового сотрудника</a>
+</p>
+
+{% if employees %}
+<div class="table-responsive">
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Имя</th>
+                <th>Компания</th>
+                <th>Почта</th>
+                <th>Телефон</th>
+                <th>Город</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employees %}
+            <tr>
+                <td>{{ employee.name }}</td>
+                <td>{{ employee.company.name }}</td>
+                <td>{{ employee.email|default:"-" }}</td>
+                <td>{{ employee.phone|default:"-" }}</td>
+                <td>{{ employee.city|default:"-" }}</td>
+                <td>{{ employee.status_display }}</td>
+                <td>
+                    <a href="{% url 'employees:employee_update' employee.pk %}" class="btn btn-sm btn-primary me-2">Изменить</a>
+                    <a href="{% url 'employees:employee_delete' employee.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    Сотрудники не найдены.
+</div>
+{% endif %}
+{% endblock %}

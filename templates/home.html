@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-body-tertiary rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Добро пожаловать в Inventory Web!</h1>
+        <p class="col-md-8 fs-4">Ваш инструмент для удобного учёта оборудования.</p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% if user.is_superuser or companies_count > 1 %}
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Компании</h5>
+                <p class="card-text">Управление списком компаний.</p>
+                <a href="{% url 'companies:company_list' %}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Сотрудники</h5>
+                <p class="card-text">Управление сотрудниками.</p>
+                <a href="{% url 'employees:employee_list' %}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Типы оборудования</h5>
+                <p class="card-text">Управление типами оборудования (например, "Ноутбук", "Монитор").</p>
+                <a href="{% url 'devices:equipmenttype_list' %}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Оборудование</h5>
+                <p class="card-text">Учёт и управление всем оборудованием.</p>
+                <a href="{% url 'devices:equipment_list' %}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_superuser %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-warning">
+            <div class="card-body">
+                <h5 class="card-title text-warning">Управление пользователями</h5>
+                <p class="card-text">Добавление/удаление пользователей и настройка их доступа к компаниям.</p>
+                <a href="{% url 'users:usercompany_list' %}" class="btn btn-warning">Перейти</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

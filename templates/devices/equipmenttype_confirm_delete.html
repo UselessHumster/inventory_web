@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить тип оборудования{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">Удалить тип оборудования</h3>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Вы уверены, что хотите удалить тип оборудования <strong>"{{ object.name }}"</strong>?</p>
+                <p class="text-danger">
+                    <strong>Внимание:</strong> Если этот тип связан с каким-либо оборудованием,
+                    его удаление будет невозможно из-за ограничений целостности данных.
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger me-2">Подтвердить удаление</button>
+                    <a href="{% url 'devices:equipmenttype_list' %}" class="btn btn-secondary">Отмена</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

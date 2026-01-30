@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Список оборудования{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Оборудование</h1>
+
+<p>
+    <a href="{% url 'devices:equipment_create' %}" class="btn btn-success">Добавить новое оборудование</a>
+</p>
+
+{% if equipment_items %}
+<div class="table-responsive">
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Модель</th>
+                <th>Серийный номер</th>
+                <th>Тип</th>
+                <th>Компания</th>
+                <th>Сотрудник</th>
+                <th>Состояние</th>
+                <th>Комментарий</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in equipment_items %}
+            <tr>
+                <td>{{ item.model }}</td>
+                <td>{{ item.serial_number }}</td>
+                <td>{{ item.equipment_type.name }}</td>
+                <td>{{ item.company.name }}</td>
+                <td>{{ item.employee|default:"-" }}</td>
+                <td>{{ item.get_condition_display }}</td>
+                <td>{{ item.comment|default:"-" }}</td>
+                <td>
+                    <a href="{% url 'devices:equipment_update' item.pk %}" class="btn btn-sm btn-primary me-2">Изменить</a>
+                    <a href="{% url 'devices:equipment_delete' item.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    Оборудование не найдено.
+</div>
+{% endif %}
+{% endblock %}
