@@ -1,13 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.forms import ModelChoiceField
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
-from django.shortcuts import redirect
 
 from inventory_web.companies.models import Company
 from inventory_web.devices.models import Equipment
 from inventory_web.employees.models import Employee
 from inventory_web.telegram import send_device_creation
-from django.forms import ModelChoiceField
 
 
 class EquipmentCompanyEmployeeFilterMixin:
@@ -31,8 +31,8 @@ class EquipmentCompanyEmployeeFilterMixin:
             initial_company = None
 
             company_id = self.request.POST.get(
-                'company') if self.request.method == 'POST' else self.request.GET.get(
-                'company')
+                'company') if self.request.method == 'POST' else (
+                self.request.GET.get('company'))
             if company_id:
                 try:
                     initial_company = Company.objects.get(pk=company_id)
@@ -44,16 +44,18 @@ class EquipmentCompanyEmployeeFilterMixin:
 
             elif self.request.method == 'GET' and 'company' in self.request.GET:
                 try:
-                    initial_company = Company.objects.get(pk=self.request.GET['company'])
+                    initial_company = Company.objects.get(
+                        pk=self.request.GET['company'])
                 except Company.DoesNotExist:
                     pass
             elif not user.is_superuser:
-                companies_for_user = Company.objects.filter(usercompany__user=user)
+                companies_for_user = Company.objects.filter(
+                    usercompany__user=user)
                 if companies_for_user.count() == 1:
                     initial_company = companies_for_user.first()
-            print(f'{initial_company=}')
             if initial_company:
-                employee_field.queryset = Employee.objects.filter(company=initial_company)
+                employee_field.queryset = Employee.objects.filter(
+                    company=initial_company)
             else:
                 employee_field.queryset = Employee.objects.none() # No company selected, no employees
 

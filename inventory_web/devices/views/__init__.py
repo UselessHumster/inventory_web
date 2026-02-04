@@ -1,9 +1,9 @@
 from .device import (
+    EquipmentCompanyEmployeeFilterMixin,
     EquipmentCreateView,
     EquipmentDeleteView,
     EquipmentListView,
     EquipmentUpdateView,
-    EquipmentCompanyEmployeeFilterMixin
 )
 from .device_type import (
     EquipmentTypeCreateView,
@@ -11,6 +11,7 @@ from .device_type import (
     EquipmentTypeListView,
     EquipmentTypeUpdateView,
 )
+
 #from .utils import
 
 __all__ = [
