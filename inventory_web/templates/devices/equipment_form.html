@@ -21,8 +21,7 @@
                                 <select class="form-select {% if field.errors %}is-invalid{% endif %}"
                                         id="{{ field.id_for_label }}"
                                         name="{{ field.name }}"
-                                        {% if field.field.required %}required{% endif %}
-                                >
+                                        {% if field.field.required %}required{% endif %}>
                                     {% if field.name == 'employee' and not field.value %}
                                         <option value="">---------</option> {# Add a blank option for employee if not pre-selected #}
                                     {% endif %}
@@ -79,7 +78,7 @@
 
             if (companyId) {
                 const url = `{% url 'inventory_web:home' %}?company_id=${companyId}`;
-                
+
                 fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                     .then(response => response.json())
                     .then(data => {
@@ -87,7 +86,7 @@
                             const option = new Option(employee.name, employee.id);
                             employeeSelect.add(option);
                         });
-                        
+
                         // Re-select the initial or previously selected employee if they exist in the new list
                         if (selectedEmployeeId && data.some(e => e.id.toString() === selectedEmployeeId)) {
                             employeeSelect.value = selectedEmployeeId;

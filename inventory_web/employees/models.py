@@ -1,5 +1,6 @@
-from Companies.models import Company
 from django.db import models
+
+from inventory_web.companies.models import Company
 
 
 class Employee(models.Model):

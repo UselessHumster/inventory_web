@@ -1,6 +1,7 @@
-from Companies.models import Company
 from django.contrib.auth.models import User
 from django.db import models
+
+from inventory_web.companies.models import Company
 
 
 class UserCompany(models.Model):

@@ -9,8 +9,8 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
     path('', RedirectView.as_view(url='home/', permanent=False), name='index'), # Redirect root to home
     path('home/', include('inventory_web.home_urls')),
-    path('companies/', include('Companies.urls')),
-    path('employees/', include('Employees.urls')),
-    path('devices/', include('Devices.urls')),
-    path('users/', include('Users.urls')),
+    path('companies/', include('inventory_web.companies.urls')),
+    path('employees/', include('inventory_web.employees.urls')),
+    path('devices/', include('inventory_web.devices.urls')),
+    path('users/', include('inventory_web.users.urls')),
 ]

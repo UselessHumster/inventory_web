@@ -1,6 +1,7 @@
-from Companies.models import Company
 from django.db import models
-from Employees.models import Employee
+
+from inventory_web.companies.models import Company
+from inventory_web.employees.models import Employee
 
 
 class EquipmentType(models.Model):

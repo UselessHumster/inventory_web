@@ -28,16 +28,16 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Компании</a>
+                        <a class="nav-link" href="{% url 'companies:company_list' %}">Компании</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Сотрудники</a>
+                        <a class="nav-link" href="{% url 'employees:employee_list' %}">Сотрудники</a>
                     </li>
                      <li class="nav-item">
-                        <a class="nav-link" href="#">Типы оборудования</a>
+                        <a class="nav-link" href="{% url 'devices:equipmenttype_list' %}">Типы оборудования</a>
                     </li>
                      <li class="nav-item">
-                        <a class="nav-link" href="#">Оборудование</a>
+                        <a class="nav-link" href="{% url 'devices:equipment_list' %}">Оборудование</a>
                     </li>
                 {% endif %}
             </ul>

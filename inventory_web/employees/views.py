@@ -1,8 +1,9 @@
-from Companies.models import Company
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelChoiceField
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+
+from inventory_web.companies.models import Company
 
 from .models import Employee
 

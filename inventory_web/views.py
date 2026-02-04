@@ -2,8 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from Companies.models import Company
-from Employees.models import Employee
+from inventory_web.companies.models import Company
+from inventory_web.employees.models import Employee
 
 
 @login_required

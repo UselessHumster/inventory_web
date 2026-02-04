@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DevicesConfig(AppConfig):
+class EmployeesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'Devices'
+    name = 'inventory_web.employees'

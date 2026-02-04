@@ -1,12 +1,17 @@
-from Companies.models import Company
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.forms import ModelChoiceField
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
-from Employees.models import Employee
+from django.shortcuts import redirect
 
-from .models import Equipment, EquipmentType
+from inventory_web.companies.models import Company
+from inventory_web.devices.models import Equipment
+from inventory_web.employees.models import Employee
+from inventory_web.telegram import send_device_creation
+from django.forms import ModelChoiceField
 
+
+
+#from .utils import EquipmentCompanyEmployeeFilterMixin
 
 class EquipmentCompanyEmployeeFilterMixin:
     """Mixin to filter companies and employees in forms based on user permissions."""
@@ -27,8 +32,19 @@ class EquipmentCompanyEmployeeFilterMixin:
             # If a company is already selected (e.g., in update view or from initial data)
             # or if the user has only one company, filter employees for that company.
             initial_company = None
+
+            company_id = self.request.POST.get(
+                'company') if self.request.method == 'POST' else self.request.GET.get(
+                'company')
+            if company_id:
+                try:
+                    initial_company = Company.objects.get(pk=company_id)
+                except Company.DoesNotExist:
+                    pass
+
             if self.object: # Update view
                 initial_company = self.object.company
+
             elif self.request.method == 'GET' and 'company' in self.request.GET:
                 try:
                     initial_company = Company.objects.get(pk=self.request.GET['company'])
@@ -38,7 +54,7 @@ class EquipmentCompanyEmployeeFilterMixin:
                 companies_for_user = Company.objects.filter(usercompany__user=user)
                 if companies_for_user.count() == 1:
                     initial_company = companies_for_user.first()
-
+            print(f'{initial_company=}')
             if initial_company:
                 employee_field.queryset = Employee.objects.filter(company=initial_company)
             else:
@@ -55,34 +71,6 @@ class EquipmentCompanyEmployeeFilterMixin:
             if companies_for_user.count() == 1:
                 initial['company'] = companies_for_user.first()
         return initial
-
-
-# EquipmentType Views
-class EquipmentTypeListView(LoginRequiredMixin, ListView):
-    model = EquipmentType
-    template_name = "devices/equipmenttype_list.html"
-    context_object_name = "equipment_types"
-
-
-class EquipmentTypeCreateView(LoginRequiredMixin, CreateView):
-    model = EquipmentType
-    template_name = "devices/equipmenttype_form.html"
-    fields = ["name"]
-    success_url = reverse_lazy("devices:equipmenttype_list")
-
-
-class EquipmentTypeUpdateView(LoginRequiredMixin, UpdateView):
-    model = EquipmentType
-    template_name = "devices/equipmenttype_form.html"
-    fields = ["name"]
-    success_url = reverse_lazy("devices:equipmenttype_list")
-
-
-class EquipmentTypeDeleteView(LoginRequiredMixin, DeleteView):
-    model = EquipmentType
-    template_name = "devices/equipmenttype_confirm_delete.html"
-    success_url = reverse_lazy("devices:equipmenttype_list")
-
 
 # Equipment Views
 class EquipmentListView(LoginRequiredMixin, ListView):
@@ -103,6 +91,11 @@ class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixi
     template_name = "devices/equipment_form.html"
     fields = ["company", "employee", "equipment_type", "model", "serial_number", "condition", "comment"]
     success_url = reverse_lazy("devices:equipment_list")
+
+    def form_valid(self, form):
+        equipment = form.save()
+        send_device_creation(equipment)
+        return redirect(self.success_url)
 
 
 class EquipmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, EquipmentCompanyEmployeeFilterMixin, UpdateView):

@@ -36,10 +36,10 @@ INSTALLED_APPS = [
     # Third-party apps
     "django_filters",
     # Local apps
-    "Companies.apps.CompaniesConfig",
-    "Devices.apps.DevicesConfig",
-    "Employees.apps.EmployeesConfig",
-    "Users.apps.UsersConfig",
+    "inventory_web.companies.apps.CompaniesConfig",
+    "inventory_web.devices.apps.DevicesConfig",
+    "inventory_web.employees.apps.EmployeesConfig",
+    "inventory_web.users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
@@ -57,7 +57,7 @@ ROOT_URLCONF = "inventory_web.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "inventory_web" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -78,7 +78,9 @@ WSGI_APPLICATION = "inventory_web.wsgi.application"
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3", conn_max_age=600
+        default="sqlite:///" + str(BASE_DIR / "data/db.sqlite3"),
+        conn_max_age=600 if os.getenv("DJANGO_ENV") == "production" else 0,
+        conn_health_checks=True,
     )
 }
 
