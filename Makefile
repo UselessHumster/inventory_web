@@ -38,7 +38,7 @@ dev:
 
 start-render:
 	@echo "Starting production server with Gunicorn..."
-	cd . && $(GUNICORN) inventory_web.wsgi:application
+	cd . && $(GUNICORN) --bind 0.0.0.0:8000 inventory_web.wsgi:application
 
 migrate:
 	@echo "Creating migrations..."
