@@ -10,9 +10,6 @@ from inventory_web.telegram import send_device_creation
 from django.forms import ModelChoiceField
 
 
-
-#from .utils import EquipmentCompanyEmployeeFilterMixin
-
 class EquipmentCompanyEmployeeFilterMixin:
     """Mixin to filter companies and employees in forms based on user permissions."""
 
