@@ -17,6 +17,7 @@
         <thead class="table-dark">
             <tr>
                 <th>Название</th>
+                <th>Telegram Chat ID</th>
                 <th>Дата создания</th>
                 <th>Действия</th>
             </tr>
@@ -25,6 +26,7 @@
             {% for company in companies %}
             <tr>
                 <td>{{ company.name }}</td>
+                <td>{{ company.telegram_chat_id }}</td>
                 <td>{{ company.created_at|date:"d.m.Y H:i" }}</td>
                 <td>
                     {% if user.is_superuser %}
