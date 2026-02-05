@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelChoiceField
 from django.shortcuts import redirect
@@ -92,8 +93,20 @@ class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixi
     success_url = reverse_lazy("devices:equipment_list")
 
     def form_valid(self, form):
-        equipment = form.save()
-        send_device_creation(equipment)
+        device = form.save()
+        company = device.company
+
+        if company.telegram_chat_id:
+            messages.success(
+                self.request,
+                f'Оборудование "{device.model}" создано успешно, уведомление отправлено!')
+            send_device_creation(
+                device=device,
+                chat_id=company.telegram_chat_id)
+        else:
+            messages.warning(
+                self.request,
+                f'Оборудование "{device.model}" создано успешно, но у компании нет телеграм чата, уведомление не отправлено!')
         return redirect(self.success_url)
 
 
