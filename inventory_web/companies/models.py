@@ -5,7 +5,7 @@ class Company(models.Model):
     """Model representing a company."""
 
     name = models.CharField(max_length=255, unique=True, verbose_name="Название компании")
-    telegram_chat_id = models.IntegerField(default=None,verbose_name='ID Telegram чата', null=True, blank=True)
+    telegram_chat_id = models.CharField(max_length=255, default=None,verbose_name='ID Telegram чата', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     class Meta:
