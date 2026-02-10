@@ -1,8 +1,10 @@
+from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from .models import Company
+from .forms import CompanyUpdateForm
 
 
 class CompanyListView(LoginRequiredMixin, ListView):
@@ -30,8 +32,8 @@ class CompanyCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 class CompanyUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Company
+    form_class = CompanyUpdateForm
     template_name = "companies/company_form.html"
-    fields = ["name", "telegram_chat_id"]
     success_url = reverse_lazy("companies:company_list")
 
     def test_func(self):
