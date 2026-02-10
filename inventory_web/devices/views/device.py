@@ -1,14 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelChoiceField
-from django.shortcuts import redirect
+from django.shortcuts import redirect, HttpResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView, DetailView
+from django.utils.text import slugify
 
 from inventory_web.companies.models import Company
 from inventory_web.devices.models import Equipment
+from inventory_web.devices.utils import prepare_device_to_report
 from inventory_web.employees.models import Employee
 from inventory_web.telegram import send_device_creation
+
+from inventory_web.reprtsgen import generate_report, CellsToFill
 
 
 class EquipmentCompanyEmployeeFilterMixin:
@@ -135,3 +139,45 @@ class EquipmentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return True
         equipment = self.get_object()
         return equipment.company in Company.objects.filter(usercompany__user=user)
+
+
+class EquipmentReportDownloadView(LoginRequiredMixin, DetailView):
+    model = Equipment
+    template_name = None
+    fields = ["company", "employee", "equipment_type", "model", "serial_number",
+              "condition", "comment"]
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+
+        # генерируем файл в памяти
+        report_buffer = generate_report(
+            prepare_device_to_report(device=self.object),
+            CellsToFill(
+                device_name = 'J16',
+                device_quantity = 'AS16',
+                device_condition = 'BW16',
+                serial_number = 'BE16',
+                employee_name = 'AQ25',
+                report_number = 'O6',
+                day = 'BH6',
+                month = 'BP6',
+                year = 'CG6',
+            )
+        )
+
+        filename = slugify(
+            f"Report_{self.object.company.name}_{self.object.serial_number}")
+        safe_filename = f"{filename}.xlsx"
+
+        response = HttpResponse(
+            report_buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response[
+            'Content-Disposition'] = f'attachment; filename="{safe_filename}"'
+        response[
+            'Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{safe_filename}'
+
+        return response
