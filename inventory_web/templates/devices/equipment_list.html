@@ -37,8 +37,11 @@
                 <td>
                     <a href="{% url 'devices:equipment_update' item.pk %}" class="btn btn-sm btn-primary me-2">Изменить</a>
                     <a href="{% url 'devices:equipment_delete' item.pk %}" class="btn btn-sm btn-danger">Удалить</a>
-                    {% if item.company.report_file %}
-                        <a href="{% url 'devices:equipment_download_report' item.pk %}" class="btn btn-sm btn-success" title="Скачать акт">📥 Акт</a>
+                    {% if item.company.report_file_to %}
+                        <a href="{% url 'devices:equipment_download_report' item.pk %}?to_user=true" class="btn btn-sm btn-success" title="Выдать">📥Выдать</a>
+                    {% endif %}
+                    {% if item.company.report_file_from %}
+                        <a href="{% url 'devices:equipment_download_report' item.pk %}?to_user=false" class="btn btn-sm btn-success" title="Принять">📥Принять</a>
                     {% endif %}
                 </td>
             </tr>

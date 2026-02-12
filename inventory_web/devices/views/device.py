@@ -149,18 +149,23 @@ class EquipmentReportDownloadView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(object=self.object)
+        is_to_user = request.GET.get('to_user') == 'true'
 
-        report = Report.get_or_create_by_device(self.object)
+        report = Report.get_or_create_by_device(self.object, is_to_user)
 
         # генерируем файл в памяти
         report_buffer = generate_report(
-            prepare_device_to_report(device=self.object,report_number=report.id),
+            prepare_device_to_report(
+                device=self.object,
+                report_number=report.id,
+                template_file=self.object.company.report_file_to
+                if is_to_user else self.object.company.report_file_from),
             CellsToFill(
                 device_name = 'J16',
                 device_quantity = 'AS16',
                 device_condition = 'BW16',
                 serial_number = 'BE16',
-                employee_name = 'AQ25',
+                employee_name = 'AQ25' if is_to_user else 'AO22',
                 report_number = 'O6',
                 day = 'BH6',
                 month = 'BP6',
