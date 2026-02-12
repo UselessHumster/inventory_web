@@ -12,6 +12,7 @@ from inventory_web.devices.utils import prepare_device_to_report
 from inventory_web.employees.models import Employee
 from inventory_web.reprtsgen import CellsToFill, generate_report
 from inventory_web.telegram import send_device_creation
+from inventory_web.devices.filters import EquipmentFilter
 
 
 class EquipmentCompanyEmployeeFilterMixin:
@@ -87,6 +88,15 @@ class EquipmentListView(LoginRequiredMixin, ListView):
         if user.is_superuser:
             return queryset
         return queryset.filter(company__usercompany__user=user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = EquipmentFilter(
+            self.request.GET,
+            queryset=self.get_queryset()
+        )
+        context['filtered_equipment'] = context['filter'].qs  # для пагинации
+        return context
 
 
 class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixin, CreateView):
