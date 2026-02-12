@@ -1,6 +1,8 @@
 from inventory_web.reprtsgen import DeviceToReport
-from .models import Equipment
 from inventory_web.settings import MEDIA_ROOT
+
+from .models import Equipment
+
 
 def prepare_device_to_report(device: Equipment, report_number):
     return DeviceToReport(

@@ -1,18 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelChoiceField
-from django.shortcuts import redirect, HttpResponse
+from django.shortcuts import HttpResponse, redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, ListView, UpdateView, DetailView
 from django.utils.text import slugify
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from inventory_web.companies.models import Company
 from inventory_web.devices.models import Equipment, Report
 from inventory_web.devices.utils import prepare_device_to_report
 from inventory_web.employees.models import Employee
+from inventory_web.reprtsgen import CellsToFill, generate_report
 from inventory_web.telegram import send_device_creation
-
-from inventory_web.reprtsgen import generate_report, CellsToFill
 
 
 class EquipmentCompanyEmployeeFilterMixin:

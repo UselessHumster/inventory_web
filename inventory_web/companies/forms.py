@@ -1,5 +1,7 @@
 from django import forms
+
 from .models import Company
+
 
 class CompanyUpdateForm(forms.ModelForm):
     class Meta:

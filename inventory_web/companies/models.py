@@ -1,4 +1,5 @@
 from django.db import models
+
 from inventory_web.settings import REPORTS_URL
 
 
