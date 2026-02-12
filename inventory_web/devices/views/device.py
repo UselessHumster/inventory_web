@@ -7,7 +7,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView, D
 from django.utils.text import slugify
 
 from inventory_web.companies.models import Company
-from inventory_web.devices.models import Equipment
+from inventory_web.devices.models import Equipment, Report
 from inventory_web.devices.utils import prepare_device_to_report
 from inventory_web.employees.models import Employee
 from inventory_web.telegram import send_device_creation
@@ -151,9 +151,11 @@ class EquipmentReportDownloadView(LoginRequiredMixin, DetailView):
         self.object = self.get_object()
         context = self.get_context_data(object=self.object)
 
+        report = Report.get_or_create_by_device(self.object)
+
         # генерируем файл в памяти
         report_buffer = generate_report(
-            prepare_device_to_report(device=self.object),
+            prepare_device_to_report(device=self.object,report_number=report.id),
             CellsToFill(
                 device_name = 'J16',
                 device_quantity = 'AS16',
