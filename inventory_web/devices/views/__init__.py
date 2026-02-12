@@ -3,8 +3,8 @@ from .device import (
     EquipmentCreateView,
     EquipmentDeleteView,
     EquipmentListView,
-    EquipmentUpdateView,
     EquipmentReportDownloadView,
+    EquipmentUpdateView,
 )
 from .device_type import (
     EquipmentTypeCreateView,

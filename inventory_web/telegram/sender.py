@@ -1,6 +1,6 @@
 from inventory_web.devices.models import Equipment
 
-from .settings import bot, admin_chat
+from .settings import bot
 
 device_desc_template = ('Inventory update\n'
                         'Username: {employee_name}\n'

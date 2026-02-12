@@ -1,10 +1,9 @@
-from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from .models import Company
 from .forms import CompanyUpdateForm
+from .models import Company
 
 
 class CompanyListView(LoginRequiredMixin, ListView):

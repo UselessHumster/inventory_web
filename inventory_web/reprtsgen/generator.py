@@ -1,8 +1,11 @@
-from openpyxl import load_workbook
-from io import BytesIO
-from typing import Dict, Any
 from datetime import datetime
-from .utils import DeviceToReport, CellsToFill
+from io import BytesIO
+from typing import Any, Dict
+
+from openpyxl import load_workbook
+
+from .utils import CellsToFill, DeviceToReport
+
 
 def generate_report(device: DeviceToReport, cells: CellsToFill):
     date = datetime.now()
