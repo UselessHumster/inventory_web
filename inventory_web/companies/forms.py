@@ -6,9 +6,10 @@ from .models import Company
 class CompanyUpdateForm(forms.ModelForm):
     class Meta:
         model = Company
-        fields = ["name", "telegram_chat_id", "report_file"]
+        fields = ["name", "telegram_chat_id", "report_file_to", "report_file_from"]
         widgets = {
-            "report_file": forms.ClearableFileInput(),
+            "report_file_to": forms.ClearableFileInput(),
+            "report_file_from": forms.ClearableFileInput(),
         }
 
     def __init__(self, *args, **kwargs):

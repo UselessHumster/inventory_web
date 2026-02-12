@@ -71,11 +71,11 @@ class Report(models.Model):
     to_user = models.BooleanField(default=True, null=False, blank=False)
 
     @classmethod
-    def get_or_create_by_device(cls, device: Equipment) -> 'Report':
+    def get_or_create_by_device(cls, device: Equipment, to_user) -> 'Report':
         """Get existing or create new Report for device"""
         return cls.objects.select_related('company', 'employee').get_or_create(
             company=device.company,
             employee=device.employee,
             device=device,
-            defaults={'to_user': True}
+            to_user=to_user,
         )[0]
