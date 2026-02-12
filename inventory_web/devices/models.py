@@ -55,3 +55,27 @@ class Equipment(models.Model):
 
     def __str__(self):
         return f"{self.equipment_type} {self.model} ({self.serial_number})"
+
+
+class Report(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=False, blank=False)
+    employee = models.ForeignKey(
+        Employee, on_delete=models.PROTECT, null=False, blank=False
+    )
+
+    device = models.ForeignKey(
+        Equipment, on_delete=models.PROTECT, null=True, blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    to_user = models.BooleanField(default=True, null=False, blank=False)
+
+    @classmethod
+    def get_or_create_by_device(cls, device: Equipment) -> 'Report':
+        """Get existing or create new Report for device"""
+        return cls.objects.select_related('company', 'employee').get_or_create(
+            company=device.company,
+            employee=device.employee,
+            device=device,
+            defaults={'to_user': True}
+        )[0]
