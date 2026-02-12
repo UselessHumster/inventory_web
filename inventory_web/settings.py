@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party apps
     "django_filters",
+    'django_bootstrap5',
     # Local apps
     "inventory_web.companies.apps.CompaniesConfig",
     "inventory_web.devices.apps.DevicesConfig",
