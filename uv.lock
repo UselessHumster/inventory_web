@@ -164,6 +164,19 @@ wheels = [
 ]
 
 [[package]]
+name = "django-bootstrap5"
+version = "26.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django", version = "5.2.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "django", version = "6.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f8/31/bd9e6acdf959d5e19757026c206a6bdfceec3001ee85bb1f9799ce304f87/django_bootstrap5-26.2.tar.gz", hash = "sha256:12331059c8230ba372ffaad990a706151e1ad8f721a870aa2e862cf6746f0d33", size = 51468, upload-time = "2026-02-08T11:47:19.067Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7a/79/d4b547849a86f450b1f1fb77f306da5d7844aba45f4aa10450d375fc26f5/django_bootstrap5-26.2-py3-none-any.whl", hash = "sha256:179af37c59f4e9b1070fc650f30961c5d903c2c0ad60280ad5b63ed394f68658", size = 26851, upload-time = "2026-02-08T11:47:20.198Z" },
+]
+
+[[package]]
 name = "django-filter"
 version = "25.2"
 source = { registry = "https://pypi.org/simple" }
@@ -214,6 +227,7 @@ dependencies = [
     { name = "dj-database-url" },
     { name = "django", version = "5.2.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "django", version = "6.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "django-bootstrap5" },
     { name = "django-filter" },
     { name = "gunicorn" },
     { name = "openpyxl" },
@@ -231,6 +245,7 @@ dev = [
 requires-dist = [
     { name = "dj-database-url", specifier = ">=3.1.0" },
     { name = "django", specifier = ">=5.2.10" },
+    { name = "django-bootstrap5", specifier = ">=26.2" },
     { name = "django-filter", specifier = ">=25.2" },
     { name = "gunicorn", specifier = ">=24.1.1" },
     { name = "openpyxl", specifier = ">=3.1.5" },
