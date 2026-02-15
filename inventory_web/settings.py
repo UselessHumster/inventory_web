@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django_filters",
     'django_bootstrap5',
     # Local apps
+    "inventory_web",
     "inventory_web.companies.apps.CompaniesConfig",
     "inventory_web.devices.apps.DevicesConfig",
     "inventory_web.employees.apps.EmployeesConfig",
