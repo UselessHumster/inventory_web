@@ -35,7 +35,7 @@
             <tr>
                 <th>Имя</th>
                 <th>Компания</th>
-                <th>Почта</th>
+                <th>Кол-во девайсов</th>
                 <th>Телефон</th>
                 <th>Город</th>
                 <th>Статус</th>
@@ -47,7 +47,7 @@
             <tr>
                 <td>{{ employee.name }}</td>
                 <td>{{ employee.company.name }}</td>
-                <td>{{ employee.email|default:"-" }}</td>
+                <td>{{ employee.equipment_count }}</td>
                 <td>{{ employee.phone|default:"-" }}</td>
                 <td>{{ employee.city|default:"-" }}</td>
                 <td>{{ employee.status_display }}</td>
