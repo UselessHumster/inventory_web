@@ -6,6 +6,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from inventory_web.companies.models import Company
 
 from .models import Employee
+from .filters import EmployeeFilter
 
 
 class EmployeeCompanyFilterMixin:
@@ -28,10 +29,23 @@ class EmployeeListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        user = self.request.user
-        if user.is_superuser:
-            return queryset
-        return queryset.filter(company__usercompany__user=user)
+
+        if not self.request.user.is_superuser:
+            queryset = queryset.filter(
+                company__usercompany__user=self.request.user
+            )
+
+        self.filterset = EmployeeFilter(
+            self.request.GET,
+            queryset=queryset
+        )
+
+        return self.filterset.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filterset
+        return context
 
 
 class EmployeeCreateView(LoginRequiredMixin, EmployeeCompanyFilterMixin, CreateView):
