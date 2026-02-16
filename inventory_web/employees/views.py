@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelChoiceField
 from django.urls import reverse_lazy
@@ -40,7 +41,10 @@ class EmployeeListView(LoginRequiredMixin, ListView):
             queryset=queryset
         )
 
-        return self.filterset.qs
+        # ВАЖНО: аннотируем уже отфильтрованный queryset
+        return self.filterset.qs.annotate(
+            equipment_count=Count("equipment")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
