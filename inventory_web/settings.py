@@ -137,3 +137,13 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 REPORTS_URL = "reports/"
 REPORTS_DIR = MEDIA_ROOT / REPORTS_URL[:-1]
+
+# Email settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = os.getenv("SMTP_HOST")
+EMAIL_PORT = int(os.getenv("SMTP_PORT", 587))
+EMAIL_HOST_USER = os.getenv("SMTP_USER")
+EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD")
+EMAIL_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

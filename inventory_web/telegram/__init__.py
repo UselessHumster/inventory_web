@@ -1,3 +1,4 @@
-from .sender import send_device_creation
+from .settings import bot
 
-__all__ = ['send_device_creation']
+def send_device_creation_to_tg(msg, chat_id):
+    return bot.send_message(chat_id=chat_id, text=msg)
