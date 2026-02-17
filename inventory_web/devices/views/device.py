@@ -8,11 +8,13 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from inventory_web.companies.models import Company
 from inventory_web.devices.models import Equipment, Report
-from inventory_web.devices.utils import prepare_device_to_report
+from inventory_web.devices.utils import gen_report_file, \
+    format_device_creation_txt
 from inventory_web.employees.models import Employee
-from inventory_web.reprtsgen import CellsToFill, generate_report
-from inventory_web.telegram import send_device_creation
+from inventory_web.telegram import send_device_creation_to_tg
 from inventory_web.devices.filters import EquipmentFilter
+from inventory_web.devices.forms import EquipmentCreateForm
+from inventory_web import send_email
 
 
 class EquipmentCompanyEmployeeFilterMixin:
@@ -99,28 +101,70 @@ class EquipmentListView(LoginRequiredMixin, ListView):
         return context
 
 
+
+
+
 class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixin, CreateView):
     model = Equipment
+    form_class = EquipmentCreateForm
     template_name = "devices/equipment_form.html"
-    fields = ["company", "employee", "equipment_type", "model", "serial_number", "condition", "comment"]
     success_url = reverse_lazy("devices:equipment_list")
 
     def form_valid(self, form):
         device = form.save()
-        company = device.company
 
+        company = device.company
+        msg_to_send = format_device_creation_txt(device)
         if company.telegram_chat_id:
-            messages.success(
-                self.request,
-                f'Оборудование "{device.model}" создано успешно, уведомление отправлено!')
-            send_device_creation(
-                device=device,
-                chat_id=company.telegram_chat_id)
-        else:
-            messages.warning(
-                self.request,
-                f'Оборудование "{device.model}" создано успешно, но у компании нет телеграм чата, уведомление не отправлено!')
+            send_device_creation_to_tg(
+                msg=msg_to_send,
+                chat_id=company.telegram_chat_id
+            )
+
+        if form.cleaned_data.get("send_email"):
+            recipients = self._parse_emails(form.cleaned_data.get("email_to"))
+            copies = self._parse_emails(form.cleaned_data.get("email_cc"))
+
+            html_message = self._build_email_text(device)
+
+            report_file = None
+            if form.cleaned_data.get("send_act"):
+                if device.company.report_file_to:
+                    report = Report.get_or_create_by_device(device,
+                                                            to_user=True)
+                    report_file = [
+                        (
+                            f"{device.serial_number}_{device.employee}.xlsx",
+                            gen_report_file(report=report,
+                                            device=device).getvalue(),
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                    ]
+
+
+
+            send_email(
+                msg=html_message,
+                topic=f"Выдача оборудования - {device.employee}",
+                recipient=recipients,
+                copy_to=copies,
+                attachments=report_file
+            )
+
+        messages.success(
+            self.request,
+            f'Оборудование "{device.model}" создано успешно!'
+        )
+
         return redirect(self.success_url)
+
+    def _parse_emails(self, raw_string):
+        if not raw_string:
+            return []
+        return [email.strip() for email in raw_string.split(",")]
+
+    def _build_email_text(self, device):
+        return format_device_creation_txt(device, to_mail=True)
 
 
 class EquipmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, EquipmentCompanyEmployeeFilterMixin, UpdateView):
@@ -163,32 +207,14 @@ class EquipmentReportDownloadView(LoginRequiredMixin, DetailView):
 
         report = Report.get_or_create_by_device(self.object, is_to_user)
 
-        # генерируем файл в памяти
-        report_buffer = generate_report(
-            prepare_device_to_report(
-                device=self.object,
-                report_number=report.id,
-                template_file=self.object.company.report_file_to
-                if is_to_user else self.object.company.report_file_from),
-            CellsToFill(
-                device_name = 'J16',
-                device_quantity = 'AS16',
-                device_condition = 'BW16',
-                serial_number = 'BE16',
-                employee_name = 'AQ25' if is_to_user else 'AO22',
-                report_number = 'O6',
-                day = 'BH6',
-                month = 'BP6',
-                year = 'CG6',
-            )
-        )
+        report_file = gen_report_file(report=report, device=self.object)
 
         filename = slugify(
             f"Report_{self.object.company.name}_{self.object.serial_number}")
         safe_filename = f"{filename}.xlsx"
 
         response = HttpResponse(
-            report_buffer.getvalue(),
+            report_file.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response[
