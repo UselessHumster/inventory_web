@@ -15,7 +15,7 @@ from inventory_web.telegram import send_device_creation_to_tg
 from inventory_web.devices.filters import EquipmentFilter
 from inventory_web.devices.forms import EquipmentCreateForm
 from inventory_web import send_email
-
+from inventory_web.devices.services.equipment_notifications import EquipmentNotificationService
 
 class EquipmentCompanyEmployeeFilterMixin:
     """Mixin to filter companies and employees in forms based on user permissions."""
@@ -101,9 +101,6 @@ class EquipmentListView(LoginRequiredMixin, ListView):
         return context
 
 
-
-
-
 class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixin, CreateView):
     model = Equipment
     form_class = EquipmentCreateForm
@@ -113,43 +110,7 @@ class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixi
     def form_valid(self, form):
         device = form.save()
 
-        company = device.company
-        msg_to_send = format_device_creation_txt(device)
-        if company.telegram_chat_id:
-            send_device_creation_to_tg(
-                msg=msg_to_send,
-                chat_id=company.telegram_chat_id
-            )
-
-        if form.cleaned_data.get("send_email"):
-            recipients = self._parse_emails(form.cleaned_data.get("email_to"))
-            copies = self._parse_emails(form.cleaned_data.get("email_cc"))
-
-            html_message = self._build_email_text(device)
-
-            report_file = None
-            if form.cleaned_data.get("send_act"):
-                if device.company.report_file_to:
-                    report = Report.get_or_create_by_device(device,
-                                                            to_user=True)
-                    report_file = [
-                        (
-                            f"{device.serial_number}_{device.employee}.xlsx",
-                            gen_report_file(report=report,
-                                            device=device).getvalue(),
-                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-                    ]
-
-
-
-            send_email(
-                msg=html_message,
-                topic=f"Выдача оборудования - {device.employee}",
-                recipient=recipients,
-                copy_to=copies,
-                attachments=report_file
-            )
+        EquipmentNotificationService.notify_about_device(device, form)
 
         messages.success(
             self.request,
@@ -169,8 +130,8 @@ class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixi
 
 class EquipmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, EquipmentCompanyEmployeeFilterMixin, UpdateView):
     model = Equipment
+    form_class = EquipmentCreateForm
     template_name = "devices/equipment_form.html"
-    fields = ["company", "employee", "equipment_type", "model", "serial_number", "condition", "comment"]
     success_url = reverse_lazy("devices:equipment_list")
 
     def test_func(self):
@@ -178,7 +139,21 @@ class EquipmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, EquipmentComp
         if user.is_superuser:
             return True
         equipment = self.get_object()
-        return equipment.company in Company.objects.filter(usercompany__user=user)
+        return equipment.company in Company.objects.filter(
+            usercompany__user=user
+        )
+
+    def form_valid(self, form):
+        device = form.save()
+
+        EquipmentNotificationService.notify_about_device(device, form)
+
+        messages.success(
+            self.request,
+            f'Оборудование "{device.model}" обновлено успешно!'
+        )
+
+        return redirect(self.success_url)
 
 
 class EquipmentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
