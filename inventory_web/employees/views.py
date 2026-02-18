@@ -28,6 +28,15 @@ class EmployeeListView(LoginRequiredMixin, ListView):
     template_name = "employees/employee_list.html"
     context_object_name = "employees"
 
+    SORTABLE_FIELDS = {
+        "name": "name",
+        "status": "is_active",
+        "equipment": "equipment_count",
+        "company": "company",
+        "phone": "phone",
+        "city": "city"
+    }
+
     def get_queryset(self):
         queryset = super().get_queryset()
 
@@ -41,14 +50,27 @@ class EmployeeListView(LoginRequiredMixin, ListView):
             queryset=queryset
         )
 
-        # ВАЖНО: аннотируем уже отфильтрованный queryset
-        return self.filterset.qs.annotate(
+        queryset = self.filterset.qs.annotate(
             equipment_count=Count("equipment")
         )
 
+        sort = self.request.GET.get("sort")
+
+        if sort:
+            direction = "-" if sort.startswith("-") else ""
+            field_name = sort.lstrip("-")
+
+            if field_name in self.SORTABLE_FIELDS:
+                queryset = queryset.order_by(
+                    f"{direction}{self.SORTABLE_FIELDS[field_name]}"
+                )
+
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['filter'] = self.filterset
+        context["filter"] = self.filterset
+        context["current_sort"] = self.request.GET.get("sort", "")
         return context
 
 
