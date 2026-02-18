@@ -50,7 +50,7 @@ class EmployeeListView(LoginRequiredMixin, ListView):
             queryset=queryset
         )
 
-        queryset = queryset.annotate(
+        queryset = self.filterset.qs.annotate(
             equipment_count=Count("equipment")
         )
 
