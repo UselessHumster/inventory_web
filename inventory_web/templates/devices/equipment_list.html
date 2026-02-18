@@ -44,7 +44,9 @@
                 <th>Модель</th>
                 <th>Серийный номер</th>
                 <th>Тип</th>
+                {% if user.is_superuser %}
                 <th>Компания</th>
+                {% endif %}
                 <th>Сотрудник</th>
                 <th>Действия</th>
             </tr>
@@ -55,7 +57,9 @@
                 <td>{{ item.model }}</td>
                 <td>{{ item.serial_number }}</td>
                 <td>{{ item.equipment_type.name }}</td>
+                {% if user.is_superuser %}
                 <td>{{ item.company.name }}</td>
+                {% endif %}
                 <td>{{ item.employee|default:"-" }}</td>
                 <td>
                     <a href="{% url 'devices:equipment_update' item.pk %}" class="btn btn-sm btn-primary me-2">Изменить</a>

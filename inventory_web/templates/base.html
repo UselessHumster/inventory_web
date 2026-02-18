@@ -46,7 +46,9 @@
                     <span class="navbar-text me-3">
                         Привет, {{ user.username }}
                     </span>
+                    {% if user.is_superuser %}
                     <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary me-2">Админка</a>
+                    {% endif %}
                      <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-outline-danger">Выйти</button>
