@@ -33,12 +33,38 @@
     <table class="table table-hover table-striped">
         <thead class="table-dark">
             <tr>
-                <th>Имя</th>
-                <th>Компания</th>
-                <th>Кол-во девайсов</th>
-                <th>Телефон</th>
-                <th>Город</th>
-                <th>Статус</th>
+                <th>
+                    <a href="?sort={% if current_sort == 'name' %}-name{% else %}name{% endif %}">
+                        Имя
+                    </a>
+                </th>
+                {% if user.is_superuser%}
+                <th>
+                    <a href="?sort={% if current_sort == 'company' %}-company{% else %}company{% endif %}">
+                        Компания
+                    </a>
+                </th>
+                {% endif %}
+                <th>
+                    <a href="?sort={% if current_sort == 'equipment' %}-equipment{% else %}equipment{% endif %}">
+                        Кол-во девайсов
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort={% if current_sort == 'phone' %}-phone{% else %}phone{% endif %}">
+                        Телефон
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort={% if current_sort == 'city' %}-city{% else %}city{% endif %}">
+                        Город
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort={% if current_sort == 'status' %}-status{% else %}status{% endif %}">
+                        Статус
+                    </a>
+                </th>
                 <th>Действия</th>
             </tr>
         </thead>
@@ -46,7 +72,9 @@
             {% for employee in employees %}
             <tr>
                 <td>{{ employee.name }}</td>
+                {% if user.is_superuser%}
                 <td>{{ employee.company.name }}</td>
+                {% endif %}
                 <td>{{ employee.equipment_count }}</td>
                 <td>{{ employee.phone|default:"-" }}</td>
                 <td>{{ employee.city|default:"-" }}</td>
