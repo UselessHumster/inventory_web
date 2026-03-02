@@ -31,6 +31,7 @@ help:
 install:
 	@echo "Installing dependencies from requirements.txt..."
 	cd . && $(UV) pip install -r requirements.txt
+	uv sync
 
 dev:
 	@echo "Starting development server on 0.0.0.0:8000..."
