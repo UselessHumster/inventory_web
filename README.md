@@ -27,7 +27,7 @@
 
 1.  **Клонируйте репозиторий:**
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/UselessHumster/inventory_web.git
     cd inventory_web
     ```
 
