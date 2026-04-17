@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Импорт оборудования из Citilink{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="mb-0">Импорт оборудования из Citilink</h3>
+            </div>
+            <div class="card-body">
+                {% if step == "upload" %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="upload">
+
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}:
+                                </label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        {% if form.non_field_errors %}
+                            {% for error in form.non_field_errors %}
+                                <div class="alert alert-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary">Показать найденное оборудование</button>
+                        <a href="{% url 'devices:equipment_list' %}" class="btn btn-secondary">Отмена</a>
+                    </form>
+                {% else %}
+                    <div class="mb-4">
+                        <div><strong>Файл:</strong> {{ original_filename }}</div>
+                        <div><strong>Компания:</strong> {{ form.cleaned_data.company.name|default:form.company.value }}</div>
+                        {% if form.cleaned_data.email_to %}
+                            <div><strong>Кому:</strong> {{ form.cleaned_data.email_to }}</div>
+                        {% endif %}
+                        {% if form.cleaned_data.email_cc %}
+                            <div><strong>Копия:</strong> {{ form.cleaned_data.email_cc }}</div>
+                        {% endif %}
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="confirm">
+                        <input type="hidden" name="company" value="{{ form.cleaned_data.company.id|default:form.company.value }}">
+                        <input type="hidden" name="email_to" value="{{ form.cleaned_data.email_to|default:'' }}">
+                        <input type="hidden" name="email_cc" value="{{ form.cleaned_data.email_cc|default:'' }}">
+                        <input type="hidden" name="temp_file_path" value="{{ temp_file_path }}">
+                        <input type="hidden" name="original_filename" value="{{ original_filename }}">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>Найдено строк:</strong> {{ preview_rows|length }}
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="toggle-all">
+                                Выбрать все доступные
+                            </button>
+                        </div>
+
+                        <div class="table-responsive mb-3">
+                            <table class="table table-hover table-striped align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 60px;">Выбрать</th>
+                                        <th>Строка</th>
+                                        <th>Модель</th>
+                                        <th>Серийный номер</th>
+                                        <th>Тип оборудования</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in preview_rows %}
+                                        <tr>
+                                            <td>
+                                                <input
+                                                    type="checkbox"
+                                                    class="form-check-input import-checkbox"
+                                                    name="selected_rows"
+                                                    value="{{ row.row_id }}"
+                                                    {% if row.row_id in selected_serials %}checked{% endif %}
+                                                    {% if not row.selectable %}disabled{% endif %}
+                                                >
+                                            </td>
+                                            <td>{{ row.row_number }}</td>
+                                            <td>{{ row.model }}</td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    name="serial_number_{{ row.row_id }}"
+                                                    class="form-control form-control-sm"
+                                                    value="{{ row.edited_serial_number }}"
+                                                >
+                                            </td>
+                                            <td>
+                                                <select
+                                                    name="equipment_type_{{ row.row_id }}"
+                                                    class="form-select form-select-sm"
+                                                    {% if not row.selectable %}disabled{% endif %}
+                                                >
+                                                    <option value="">Выберите тип</option>
+                                                    {% for equipment_type in equipment_types %}
+                                                        <option
+                                                            value="{{ equipment_type.id }}"
+                                                            {% if equipment_type.id|stringformat:"s" == row.selected_equipment_type_id|stringformat:"s" %}selected{% endif %}
+                                                        >
+                                                            {{ equipment_type.name }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                {% if row.suggested_equipment_type_name %}
+                                                    <div class="form-text">Подсказка: {{ row.suggested_equipment_type_name }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if row.serial_missing %}
+                                                    <span class="badge text-bg-secondary">Пустой серийный номер</span>
+                                                {% elif row.exists_in_db %}
+                                                    <span class="badge text-bg-danger">Уже есть в базе</span>
+                                                {% elif row.duplicate_in_file and not row.selectable %}
+                                                    <span class="badge text-bg-warning">Дубликат в файле</span>
+                                                {% elif row.duplicate_in_file %}
+                                                    <span class="badge text-bg-warning">Первый из дубликатов</span>
+                                                {% else %}
+                                                    <span class="badge text-bg-success">Будет загружено</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Загрузить выбранное оборудование</button>
+                        <a href="{% url 'devices:equipment_import_citylink' %}" class="btn btn-secondary">Загрузить другой файл</a>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if step == "preview" %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleButton = document.getElementById("toggle-all");
+    const checkboxes = Array.from(document.querySelectorAll(".import-checkbox:not(:disabled)"));
+    let shouldCheck = false;
+
+    toggleButton.addEventListener("click", function () {
+        shouldCheck = !shouldCheck;
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = shouldCheck;
+        });
+        toggleButton.textContent = shouldCheck ? "Снять выделение" : "Выбрать все доступные";
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

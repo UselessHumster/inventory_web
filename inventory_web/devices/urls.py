@@ -14,6 +14,7 @@ urlpatterns = [
     # Equipment URLs
     path('', views.EquipmentListView.as_view(), name='equipment_list'),
     path('create/', views.EquipmentCreateView.as_view(), name='equipment_create'),
+    path('import/citylink/', views.EquipmentCitylinkImportView.as_view(), name='equipment_import_citylink'),
     path('<int:pk>/update/', views.EquipmentUpdateView.as_view(), name='equipment_update'),
     path('<int:pk>/delete/', views.EquipmentDeleteView.as_view(), name='equipment_delete'),
     path('<int:pk>/download-report/', views.EquipmentReportDownloadView.as_view(),name='equipment_download_report'),

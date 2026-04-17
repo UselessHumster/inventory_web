@@ -1,4 +1,7 @@
 from django import forms
+
+from inventory_web.companies.models import Company
+
 from .models import Equipment
 
 
@@ -59,5 +62,62 @@ class EquipmentCreateForm(forms.ModelForm):
                 raise forms.ValidationError(
                     "Укажите хотя бы одного получателя"
                 )
+
+        return cleaned_data
+
+
+class CitylinkImportUploadForm(forms.Form):
+    file = forms.FileField(
+        label="Файл Citilink",
+        widget=forms.FileInput(
+            attrs={
+                "class": "form-control",
+                "accept": (
+                    ".xls,.xlsx,application/vnd.ms-excel,"
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ),
+            }
+        ),
+    )
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.none(),
+        label="Компания",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    email_to = forms.CharField(
+        required=False,
+        label="Кому",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "email1@mail.com, email2@mail.com",
+            }
+        ),
+    )
+    email_cc = forms.CharField(
+        required=False,
+        label="Копия",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "email1@mail.com, email2@mail.com",
+            }
+        ),
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user and not user.is_superuser:
+            self.fields["company"].queryset = Company.objects.filter(usercompany__user=user).distinct()
+        else:
+            self.fields["company"].queryset = Company.objects.all()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email_to = cleaned_data.get("email_to", "").strip()
+        email_cc = cleaned_data.get("email_cc", "").strip()
+
+        if email_cc and not email_to:
+            raise forms.ValidationError("Укажите получателя в поле «Кому».")
 
         return cleaned_data

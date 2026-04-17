@@ -1,4 +1,5 @@
 from .device import (
+    EquipmentCitylinkImportView,
     EquipmentCompanyEmployeeFilterMixin,
     EquipmentCreateView,
     EquipmentDeleteView,
@@ -17,6 +18,7 @@ from .device_type import (
 
 __all__ = [
     'EquipmentCompanyEmployeeFilterMixin',
+    'EquipmentCitylinkImportView',
     'EquipmentTypeListView',
     'EquipmentTypeCreateView',
     'EquipmentTypeDeleteView',
