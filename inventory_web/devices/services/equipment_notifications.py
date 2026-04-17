@@ -1,48 +1,39 @@
-from inventory_web.devices.models import Report
-from inventory_web.devices.utils import (
-    gen_report_file,
-    format_device_creation_txt
-)
-from inventory_web.telegram import send_device_creation_to_tg
 from inventory_web import send_email
+from inventory_web.devices.models import Report
+from inventory_web.devices.utils import format_device_creation_txt, gen_report_file
+from inventory_web.telegram import send_device_creation_to_tg
+
 
 class EquipmentNotificationService:
-
     @staticmethod
     def notify_about_device(device, form):
         company = device.company
 
         # Telegram
-        msg_to_send = format_device_creation_txt(device)
+        msg_to_send = format_device_creation_txt(device, include_comment=True)
         if company.telegram_chat_id:
-            send_device_creation_to_tg(
-                msg=msg_to_send,
-                chat_id=company.telegram_chat_id
-            )
+            send_device_creation_to_tg(msg=msg_to_send, chat_id=company.telegram_chat_id)
 
         # Email
         if form.cleaned_data.get("send_email"):
-            recipients = EquipmentNotificationService._parse_emails(
-                form.cleaned_data.get("email_to")
-            )
-            copies = EquipmentNotificationService._parse_emails(
-                form.cleaned_data.get("email_cc")
-            )
+            recipients = EquipmentNotificationService._parse_emails(form.cleaned_data.get("email_to"))
+            copies = EquipmentNotificationService._parse_emails(form.cleaned_data.get("email_cc"))
 
-            html_message = format_device_creation_txt(device, to_mail=True)
+            html_message = format_device_creation_txt(
+                device,
+                to_mail=True,
+                include_comment=True,
+            )
 
             report_file = None
             if form.cleaned_data.get("send_act"):
                 if device.company.report_file_to:
-                    report = Report.get_or_create_by_device(
-                        device,
-                        to_user=True
-                    )
+                    report = Report.get_or_create_by_device(device, to_user=True)
                     report_file = [
                         (
                             f"{device.serial_number}_{device.employee}.xlsx",
                             gen_report_file(report=report, device=device).getvalue(),
-                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         )
                     ]
 
@@ -51,7 +42,7 @@ class EquipmentNotificationService:
                 topic=f"Выдача оборудования - {device.employee}",
                 recipient=recipients,
                 copy_to=copies,
-                attachments=report_file
+                attachments=report_file,
             )
 
     @staticmethod

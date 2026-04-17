@@ -12,6 +12,7 @@ from openpyxl import Workbook
 from inventory_web.companies.models import Company
 from inventory_web.devices.models import Equipment, EquipmentType
 from inventory_web.devices.services.citylink_import import CitylinkImportService
+from inventory_web.employees.models import Employee
 from inventory_web.users.models import UserCompany
 
 
@@ -254,3 +255,46 @@ class EquipmentCitylinkImportViewTests(TestCase):
             CitylinkImportServiceTests._build_workbook_bytes(model=model, serials=serials),
             content_type="application/vnd.ms-excel",
         )
+
+
+class EquipmentCreateViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="creator", password="pass12345")
+        self.company = Company.objects.create(name="Create Company")
+        self.employee = Employee.objects.create(company=self.company, name="Иван Иванов")
+        self.equipment_type = EquipmentType.objects.create(name="Монитор")
+        UserCompany.objects.create(user=self.user, company=self.company)
+        self.client.force_login(self.user)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        DEFAULT_FROM_EMAIL="noreply@example.com",
+    )
+    def test_create_device_email_contains_comment(self):
+        response = self.client.post(
+            reverse("devices:equipment_create"),
+            data={
+                "company": self.company.pk,
+                "employee": self.employee.pk,
+                "equipment_type": self.equipment_type.pk,
+                "model": "Dell P2422H",
+                "serial_number": "MON-001",
+                "condition": Equipment.Condition.NEW,
+                "comment": "Проверить блок питания",
+                "send_email": "on",
+                "email_to": "user@example.com",
+                "email_cc": "copy@example.com",
+                "send_act": "",
+            },
+            follow=True,
+        )
+
+        self.assertRedirects(response, reverse("devices:equipment_list"))
+        self.assertTrue(Equipment.objects.filter(serial_number="MON-001", company=self.company).exists())
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@example.com"])
+        self.assertEqual(mail.outbox[0].cc, ["copy@example.com"])
+        self.assertIn("Сотрудник: Иван Иванов", mail.outbox[0].body)
+        self.assertIn("Тип оборудования: Монитор", mail.outbox[0].body)
+        self.assertIn("Комментарий: Проверить блок питания", mail.outbox[0].body)
+        self.assertIn("Комментарий: Проверить блок питания", mail.outbox[0].alternatives[0][0])
