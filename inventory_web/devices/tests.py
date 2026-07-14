@@ -10,7 +10,8 @@ from django.urls import reverse
 from openpyxl import Workbook
 
 from inventory_web.companies.models import Company
-from inventory_web.devices.models import Equipment, EquipmentType
+from inventory_web.devices.forms import CitylinkImportUploadForm, EquipmentCreateForm
+from inventory_web.devices.models import Equipment, EquipmentNotificationSettings, EquipmentType
 from inventory_web.devices.services.citylink_import import CitylinkImportService
 from inventory_web.users.models import UserCompany
 
@@ -61,6 +62,58 @@ class CitylinkImportServiceTests(TestCase):
         buffer = io.BytesIO()
         workbook.save(buffer)
         return buffer.getvalue()
+
+
+class EquipmentNotificationSettingsTests(TestCase):
+    def setUp(self):
+        EquipmentNotificationSettings.objects.create(
+            email_to="equipment@example.com",
+            email_cc="accounting@example.com",
+        )
+
+    def test_equipment_form_defaults_to_sending_email_and_configured_recipients(self):
+        form = EquipmentCreateForm()
+
+        self.assertTrue(form["send_email"].value())
+        self.assertEqual(form["email_to"].value(), "equipment@example.com")
+        self.assertEqual(form["email_cc"].value(), "accounting@example.com")
+
+
+class EquipmentNotificationDefaultsViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="tester", password="pass12345")
+        self.company = Company.objects.create(name="Test Company")
+        self.equipment_type = EquipmentType.objects.create(name="Ноутбук")
+        self.device = Equipment.objects.create(
+            company=self.company,
+            equipment_type=self.equipment_type,
+            model="Test laptop",
+            serial_number="SN-001",
+        )
+        EquipmentNotificationSettings.objects.create(
+            email_to="equipment@example.com",
+            email_cc="accounting@example.com",
+        )
+        UserCompany.objects.create(user=self.user, company=self.company)
+        self.client.force_login(self.user)
+
+    def test_create_and_update_forms_use_notification_defaults(self):
+        for url in (
+            reverse("devices:equipment_create"),
+            reverse("devices:equipment_update", args=[self.device.pk]),
+        ):
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.context["form"]["send_email"].value())
+            self.assertEqual(response.context["form"]["email_to"].value(), "equipment@example.com")
+            self.assertEqual(response.context["form"]["email_cc"].value(), "accounting@example.com")
+
+    def test_citylink_import_form_defaults_to_configured_recipients(self):
+        form = CitylinkImportUploadForm()
+
+        self.assertEqual(form["email_to"].value(), "equipment@example.com")
+        self.assertEqual(form["email_cc"].value(), "accounting@example.com")
 
 
 class EquipmentCitylinkImportViewTests(TestCase):
