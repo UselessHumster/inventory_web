@@ -25,5 +25,14 @@ if ! systemctl is-active --quiet "$SERVICE_NAME"; then
     exit 1
 fi
 
-curl --fail --silent --show-error --max-time 10 --output /dev/null http://127.0.0.1:8000/
-echo "Deployment completed: $(git rev-parse --short HEAD)"
+for _ in {1..10}; do
+    if curl --fail --silent --show-error --max-time 2 --output /dev/null http://127.0.0.1:8000/; then
+        echo "Deployment completed: $(git rev-parse --short HEAD)"
+        exit 0
+    fi
+    sleep 1
+done
+
+echo "The service did not become ready within 10 seconds." >&2
+systemctl status "$SERVICE_NAME" --no-pager
+exit 1
