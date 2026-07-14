@@ -1,12 +1,20 @@
 from django.contrib import admin
 
-from .models import Equipment, EquipmentType
+from .models import Equipment, EquipmentNotificationSettings, EquipmentType
 
 
 @admin.register(EquipmentType)
 class EquipmentTypeAdmin(admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name",)
+
+
+@admin.register(EquipmentNotificationSettings)
+class EquipmentNotificationSettingsAdmin(admin.ModelAdmin):
+    fields = ("email_to", "email_cc")
+
+    def has_add_permission(self, request):
+        return not EquipmentNotificationSettings.objects.exists()
 
 
 @admin.register(Equipment)

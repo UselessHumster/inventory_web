@@ -18,6 +18,20 @@ class EquipmentType(models.Model):
         return self.name
 
 
+class EquipmentNotificationSettings(models.Model):
+    """Default email recipients for equipment notifications."""
+
+    email_to = models.CharField(max_length=1000, blank=True, verbose_name="Кому")
+    email_cc = models.CharField(max_length=1000, blank=True, verbose_name="Копия")
+
+    class Meta:
+        verbose_name = "Настройки уведомлений об оборудовании"
+        verbose_name_plural = "Настройки уведомлений об оборудовании"
+
+    def __str__(self):
+        return "Настройки уведомлений об оборудовании"
+
+
 class Equipment(models.Model):
     """Model representing a piece of equipment."""
 
