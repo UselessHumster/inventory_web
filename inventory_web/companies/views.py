@@ -46,7 +46,7 @@ class CompanyUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             self.object.regenerate_api_key()
             self.object.save(update_fields=["api_key"])
             messages.success(request, "API-ключ компании сгенерирован.")
-            return redirect(self.success_url)
+            return redirect("companies:company_update", pk=self.object.pk)
         return super().post(request, *args, **kwargs)
 
 
