@@ -111,7 +111,7 @@
                     </div>
 
 
-                    <div id="email_fields" style="display:none;">
+                    <div id="email_fields">
 
                         <div class="mb-3">
                             {{ form.email_to.label_tag }}
@@ -188,8 +188,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkbox = document.getElementById("id_send_email");
     const emailFields = document.getElementById("email_fields");
 
+    emailFields.style.display = checkbox.checked ? "block" : "none";
+
     checkbox.addEventListener("change", function () {
         emailFields.style.display = this.checked ? "block" : "none";
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const company = document.getElementById("id_company");
+    const emailTo = document.getElementById("id_email_to");
+    const emailCc = document.getElementById("id_email_cc");
+    if (!company || !emailTo || !emailCc) return;
+    company.addEventListener("change", function () {
+        if (!this.value) return;
+        fetch(`{% url 'devices:equipment_notification_recipients' %}?company_id=${this.value}`)
+            .then(response => response.json())
+            .then(data => { emailTo.value = data.email_to; emailCc.value = data.email_cc; });
     });
 });
 </script>

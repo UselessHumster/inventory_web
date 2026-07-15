@@ -170,4 +170,20 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 {% endif %}
+{% if step == "upload" %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const company = document.getElementById("id_company");
+    const emailTo = document.getElementById("id_email_to");
+    const emailCc = document.getElementById("id_email_cc");
+    if (!company || !emailTo || !emailCc) return;
+    company.addEventListener("change", function () {
+        if (!this.value) return;
+        fetch(`{% url 'devices:equipment_notification_recipients' %}?company_id=${this.value}`)
+            .then(response => response.json())
+            .then(data => { emailTo.value = data.email_to; emailCc.value = data.email_cc; });
+    });
+});
+</script>
+{% endif %}
 {% endblock %}
