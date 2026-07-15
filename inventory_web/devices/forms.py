@@ -2,14 +2,7 @@ from django import forms
 
 from inventory_web.companies.models import Company
 
-from .models import Equipment, EquipmentNotificationSettings
-
-
-def get_notification_email_defaults():
-    settings = EquipmentNotificationSettings.objects.first()
-    if not settings:
-        return {"email_to": "", "email_cc": ""}
-    return {"email_to": settings.email_to, "email_cc": settings.email_cc}
+from .models import Equipment
 
 
 class EquipmentCreateForm(forms.ModelForm):
@@ -62,7 +55,10 @@ class EquipmentCreateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.initial.update({"send_email": True, **get_notification_email_defaults()})
+        self.initial["send_email"] = True
+
+    def set_notification_defaults(self, company):
+        self.initial.update({"email_to": company.equipment_email_to, "email_cc": company.equipment_email_cc})
 
     def clean(self):
         cleaned_data = super().clean()
@@ -118,7 +114,6 @@ class CitylinkImportUploadForm(forms.Form):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.initial.update(get_notification_email_defaults())
         if user and not user.is_superuser:
             self.fields["company"].queryset = Company.objects.filter(usercompany__user=user).distinct()
         else:

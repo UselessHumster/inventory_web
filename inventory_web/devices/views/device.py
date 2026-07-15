@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelChoiceField
+from django.http import JsonResponse
 from django.shortcuts import HttpResponse, redirect
 from django.urls import reverse_lazy
 from django.utils.text import slugify
@@ -68,6 +69,14 @@ class EquipmentCompanyEmployeeFilterMixin:
                     company=initial_company)
             else:
                 employee_field.queryset = Employee.objects.none() # No company selected, no employees
+
+        if not form.is_bound:
+            company_id = form.instance.company_id or form.initial.get("company")
+            if isinstance(company_id, Company):
+                company_id = company_id.pk
+            company = Company.objects.filter(pk=company_id).first() if company_id else None
+            if company:
+                form.set_notification_defaults(company)
 
         return form
 
@@ -319,6 +328,17 @@ class EquipmentCitylinkImportView(LoginRequiredMixin, View):
         from django.shortcuts import render
 
         return render(self.request, self.template_name, context)
+
+
+class EquipmentNotificationRecipientsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        companies = Company.objects.filter(pk=request.GET.get("company_id"))
+        if not request.user.is_superuser:
+            companies = companies.filter(usercompany__user=request.user)
+        company = companies.first()
+        if not company:
+            return JsonResponse({"detail": "Компания не найдена."}, status=404)
+        return JsonResponse({"email_to": company.equipment_email_to, "email_cc": company.equipment_email_cc})
 
 
 class EquipmentCreateView(LoginRequiredMixin, EquipmentCompanyEmployeeFilterMixin, CreateView):

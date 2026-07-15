@@ -22,7 +22,7 @@ class CompanyListView(LoginRequiredMixin, ListView):
 class CompanyCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Company
     template_name = "companies/company_form.html"
-    fields = ["name", "telegram_chat_id"]
+    fields = ["name", "telegram_chat_id", "equipment_email_to", "equipment_email_cc"]
     success_url = reverse_lazy("companies:company_list")
 
     def test_func(self):
