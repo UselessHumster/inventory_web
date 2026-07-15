@@ -1,4 +1,6 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
@@ -37,6 +39,15 @@ class CompanyUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         return self.request.user.is_superuser
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if "regenerate_api_key" in request.POST:
+            self.object.regenerate_api_key()
+            self.object.save(update_fields=["api_key"])
+            messages.success(request, "API-ключ компании сгенерирован.")
+            return redirect(self.success_url)
+        return super().post(request, *args, **kwargs)
 
 
 class CompanyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):

@@ -39,6 +39,11 @@ class Equipment(models.Model):
     )
     model = models.CharField(max_length=255, verbose_name="Модель устройства")
     serial_number = models.CharField(max_length=255, unique=True, verbose_name="Серийный номер")
+    bitlocker_recovery_key = models.CharField(
+        max_length=64,
+        blank=True,
+        verbose_name="Ключ восстановления BitLocker",
+    )
     condition = models.CharField(
         max_length=4,
         choices=Condition.choices,
