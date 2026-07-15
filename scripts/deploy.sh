@@ -18,6 +18,7 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 uv sync --frozen
 .venv/bin/python manage.py migrate --noinput
+.venv/bin/python manage.py collectstatic --noinput
 systemctl restart "$SERVICE_NAME"
 
 if ! systemctl is-active --quiet "$SERVICE_NAME"; then

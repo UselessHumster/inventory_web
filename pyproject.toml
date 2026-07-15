@@ -14,6 +14,7 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pytelegrambotapi>=4.30.0",
     "python-dotenv>=1.2.1",
+    "whitenoise>=6.11.0",
 ]
 
 [dependency-groups]
