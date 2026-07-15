@@ -4,6 +4,7 @@ from .device import (
     EquipmentCreateView,
     EquipmentDeleteView,
     EquipmentListView,
+    EquipmentNotificationRecipientsView,
     EquipmentReportDownloadView,
     EquipmentUpdateView,
 )
@@ -26,6 +27,7 @@ __all__ = [
     'EquipmentCreateView',
     'EquipmentDeleteView',
     'EquipmentListView',
+    'EquipmentNotificationRecipientsView',
     'EquipmentUpdateView',
     'EquipmentReportDownloadView'
 ]
