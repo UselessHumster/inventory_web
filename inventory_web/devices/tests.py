@@ -1,3 +1,4 @@
+import json
 import shutil
 import tempfile
 from pathlib import Path
@@ -61,6 +62,82 @@ class CitylinkImportServiceTests(TestCase):
         buffer = io.BytesIO()
         workbook.save(buffer)
         return buffer.getvalue()
+
+
+class BitLockerKeyApiTests(TestCase):
+    key = "123456-234567-345678-456789-567890-678901-789012-890123"
+
+    def setUp(self):
+        self.company = Company.objects.create(name="API Company", api_key="company-api-key")
+        self.other_company = Company.objects.create(name="Other API Company", api_key="other-api-key")
+        self.equipment_type = EquipmentType.objects.create(name="Ноутбук")
+        self.url = "/api/bitlocker-keys"
+
+    def post(self, payload, api_key="company-api-key"):
+        return self.client.post(
+            self.url,
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_X_API_KEY=api_key,
+        )
+
+    def test_creates_device_and_extracts_key_from_text_without_notifications(self):
+        response = self.post(
+            {
+                "serial_number": "SN-NEW",
+                "text": f"Recovery password for this device: {self.key}. Keep it safe.",
+            }
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["created"], True)
+        device = Equipment.objects.get(serial_number="SN-NEW")
+        self.assertEqual(device.company, self.company)
+        self.assertEqual(device.equipment_type.name, "Ноутбук")
+        self.assertEqual(device.model, "Не определено")
+        self.assertEqual(device.bitlocker_recovery_key, self.key)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_updates_existing_device_with_direct_key(self):
+        device = Equipment.objects.create(
+            company=self.company,
+            equipment_type=self.equipment_type,
+            model="ThinkPad",
+            serial_number="SN-EXISTING",
+        )
+
+        response = self.post({"serial_number": device.serial_number, "bitlocker_key": self.key})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["created"], False)
+        device.refresh_from_db()
+        self.assertEqual(device.bitlocker_recovery_key, self.key)
+
+    def test_rejects_invalid_requests_and_other_company_serial(self):
+        response = self.post({"serial_number": "SN-INVALID", "text": "No recovery password here"})
+        self.assertEqual(response.status_code, 422)
+
+        response = self.post({"serial_number": "SN-BOTH", "text": self.key, "bitlocker_key": self.key})
+        self.assertEqual(response.status_code, 400)
+
+        response = self.post({"serial_number": "SN-UNAUTH", "bitlocker_key": self.key}, api_key="invalid")
+        self.assertEqual(response.status_code, 401)
+
+        device = Equipment.objects.create(
+            company=self.other_company,
+            equipment_type=self.equipment_type,
+            model="Other laptop",
+            serial_number="SN-OTHER",
+        )
+        response = self.post({"serial_number": device.serial_number, "bitlocker_key": self.key})
+        self.assertEqual(response.status_code, 409)
+        device.refresh_from_db()
+        self.assertEqual(device.bitlocker_recovery_key, "")
+
+    def test_only_post_is_allowed(self):
+        response = self.client.get(self.url, HTTP_X_API_KEY="company-api-key")
+
+        self.assertEqual(response.status_code, 405)
 
 
 class EquipmentNotificationDefaultsViewTests(TestCase):

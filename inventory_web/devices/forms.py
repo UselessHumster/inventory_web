@@ -49,6 +49,7 @@ class EquipmentCreateForm(forms.ModelForm):
             "equipment_type",
             "model",
             "serial_number",
+            "bitlocker_recovery_key",
             "condition",
             "comment",
         ]

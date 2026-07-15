@@ -14,6 +14,18 @@
             <div class="card-body">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                {% if object %}
+                    <div class="mb-3">
+                        <label class="form-label" for="company-api-key">API-ключ</label>
+                        <div class="input-group">
+                            <input id="company-api-key" class="form-control" type="text" value="{{ object.api_key|default:'' }}" readonly>
+                            <button type="submit" name="regenerate_api_key" value="1" class="btn btn-outline-secondary">
+                                {% if object.api_key %}Перевыпустить{% else %}Сгенерировать{% endif %}
+                            </button>
+                        </div>
+                        <div class="form-text">Используется для API-интеграций этой компании.</div>
+                    </div>
+                {% endif %}
                 {% for field in form %}
                     <div class="mb-3">
                         <label for="{{ field.id_for_label }}" class="form-label">
