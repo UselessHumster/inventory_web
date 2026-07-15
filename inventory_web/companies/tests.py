@@ -16,10 +16,13 @@ class CompanyApiKeyViewTests(TestCase):
     def test_api_key_is_generated_and_can_be_regenerated(self):
         response = self.client.post(self.url, {"regenerate_api_key": "1"})
 
-        self.assertRedirects(response, reverse("companies:company_list"))
+        self.assertRedirects(response, self.url)
         self.company.refresh_from_db()
         first_key = self.company.api_key
         self.assertTrue(first_key)
+
+        response = self.client.get(self.url)
+        self.assertContains(response, first_key)
 
         self.client.post(self.url, {"regenerate_api_key": "1"})
         self.company.refresh_from_db()
