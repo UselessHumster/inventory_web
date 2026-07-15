@@ -95,21 +95,33 @@ class EquipmentListView(LoginRequiredMixin, ListView):
     model = Equipment
     template_name = "devices/equipment_list.html"
     context_object_name = "equipment_items"
+    paginate_by = 50
+    per_page_options = (50, 100, 200, 500)
 
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-        if user.is_superuser:
-            return queryset
-        return queryset.filter(company__usercompany__user=user)
+        if not user.is_superuser:
+            queryset = queryset.filter(company__usercompany__user=user)
+
+        self.filterset = EquipmentFilter(self.request.GET, queryset=queryset)
+        return self.filterset.qs.select_related("company", "employee", "equipment_type")
+
+    def get_paginate_by(self, queryset):
+        try:
+            per_page = int(self.request.GET.get("per_page", self.paginate_by))
+        except (TypeError, ValueError):
+            return self.paginate_by
+        return per_page if per_page in self.per_page_options else self.paginate_by
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['filter'] = EquipmentFilter(
-            self.request.GET,
-            queryset=self.get_queryset()
-        )
-        context['filtered_equipment'] = context['filter'].qs  # для пагинации
+        context["filter"] = self.filterset
+        context["per_page_options"] = self.per_page_options
+        context["selected_per_page"] = self.get_paginate_by(self.object_list)
+        query_params = self.request.GET.copy()
+        query_params.pop("page", None)
+        context["pagination_query"] = query_params.urlencode()
         return context
 
 

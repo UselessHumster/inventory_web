@@ -102,6 +102,50 @@ class EquipmentNotificationDefaultsViewTests(TestCase):
         self.assertEqual(response.json(), {"email_to": "equipment@example.com", "email_cc": "accounting@example.com"})
 
 
+class EquipmentListViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="tester", password="pass12345")
+        company = Company.objects.create(name="Test Company")
+        equipment_type = EquipmentType.objects.create(name="Ноутбук")
+        UserCompany.objects.create(user=self.user, company=company)
+        Equipment.objects.bulk_create(
+            [
+                Equipment(
+                    company=company,
+                    equipment_type=equipment_type,
+                    model=f"Test laptop {index}",
+                    serial_number=f"SN-{index:03}",
+                )
+                for index in range(55)
+            ]
+        )
+        self.client.force_login(self.user)
+
+    def test_list_is_paginated_with_default_page_size(self):
+        response = self.client.get(reverse("devices:equipment_list"))
+
+        self.assertEqual(len(response.context["equipment_items"]), 50)
+        self.assertTrue(response.context["is_paginated"])
+        self.assertEqual(response.context["selected_per_page"], 50)
+
+    def test_list_accepts_allowed_page_size_and_preserves_filters(self):
+        response = self.client.get(
+            reverse("devices:equipment_list"),
+            {"per_page": 100, "model": "Test laptop"},
+        )
+
+        self.assertEqual(len(response.context["equipment_items"]), 55)
+        self.assertEqual(response.context["selected_per_page"], 100)
+        self.assertIn("per_page=100", response.context["pagination_query"])
+        self.assertIn("model=Test+laptop", response.context["pagination_query"])
+
+    def test_list_uses_default_page_size_for_unknown_value(self):
+        response = self.client.get(reverse("devices:equipment_list"), {"per_page": 10})
+
+        self.assertEqual(len(response.context["equipment_items"]), 50)
+        self.assertEqual(response.context["selected_per_page"], 50)
+
+
 class EquipmentCitylinkImportViewTests(TestCase):
     @classmethod
     def setUpClass(cls):
